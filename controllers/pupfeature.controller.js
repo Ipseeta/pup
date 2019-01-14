@@ -1,7 +1,13 @@
 const puppeteer = require('puppeteer'),
     config = require('../config'),
     cloudinary = require('cloudinary'),
-    fs = require('fs');
+    fs = require('fs'),
+    {
+        extractDataFromPerformanceTiming
+    } = require('../helpers/helper'),
+    {
+        URL
+    } = require('url');
 cloudinary.config(config.cloudinary);
 
 exports.getScreenshot = function (req, res) {
@@ -113,6 +119,31 @@ exports.makePdf = function (req, res) {
     });
 }
 
+exports.getStats = function (req, res) {
+    const url = req.body.url;
+    if (!url) {
+        return res.status(400).end();
+    }
+    puppeteer.launch().then(async browser => {
+        const page = await browser.newPage();
+        await page.goto(url);
+        const performanceTiming = JSON.parse(
+            await page.evaluate(() => JSON.stringify(window.performance.timing))
+        );
+        await browser.close();
+        const result = extractDataFromPerformanceTiming(
+            performanceTiming,
+            'responseEnd',
+            'domInteractive',
+            'domContentLoadedEventEnd',
+            'loadEventEnd'
+        );
+        res.json({
+            stats: result
+        });
+    });
+}
+
 exports.getWSEndpoint = function (req, res) {
     puppeteer.launch().then(async browser => {
         const wsEndpoint = await browser.wsEndpoint();
@@ -120,4 +151,84 @@ exports.getWSEndpoint = function (req, res) {
             wsEndpoint: wsEndpoint
         });
     });
+}
+
+exports.getScreencast = function (req, res) {
+
+}
+
+exports.extractPage = function (req, res) {
+    let url = req.body.url;
+    if (!url) {
+        return res.status(400).end();
+    }
+    let data = {};
+    puppeteer.launch().then(async browser => {
+        const page = await browser.newPage();
+        const response = await page.goto(url);
+        data.title = await page.title();
+        data.url = await page.url();
+        data.description = await page.evaluate(getDescription);
+        data.image = await page.evaluate(getImage);
+        data.content = await page.evaluate(getContent);
+        data.favicon_url = await page.evaluate(getFavicon);
+        data.type = response.headers()['content-type'];
+        data.provider_display = (new URL(data.url)).hostname;
+        data.provider_url = data.url;
+        await browser.close();
+        res.json({
+            result: data
+        });
+    });
+};
+
+
+function getContent() {
+
+    if (document.querySelector('.article-content')) {
+        return document.querySelector('.article-content').innerHTML;
+    }
+
+    return null;
+}
+
+function getFavicon() {
+    if (document.querySelector('link[rel="shortcut icon"]')) {
+        return document.querySelector('link[rel="shortcut icon"]').href;
+    }
+
+    if (document.querySelector('link[rel="icon"]')) {
+        return document.querySelector('link[rel="icon"]').href;
+    }
+
+    return null;
+}
+
+function getDescription() {
+
+    if (document.querySelector('meta[property="og:description"]')) {
+        return document.querySelector('meta[property="og:description"]').content;
+    }
+
+    if (document.querySelector('[itemprop="description"]')) {
+        return document.querySelector('[itemprop="description"]').text;
+    }
+
+    if (document.querySelector('meta[name="description"]')) {
+        return document.querySelector('meta[name="description"]').content;
+    }
+
+    return document.body.innerText.substring(0, 180) + '...';
+}
+
+function getImage() {
+    if (document.querySelector('meta[property="og:image"]')) {
+        return document.querySelector('meta[property="og:image"]').content;
+    }
+
+    if (document.querySelector('[itemprop="image"]')) {
+        return document.querySelector('[itemprop="image"]').text;
+    }
+
+    return null;
 }
