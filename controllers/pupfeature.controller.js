@@ -162,9 +162,21 @@ exports.extractPage = function (req, res) {
     if (!url) {
         return res.status(400).end();
     }
+
     let data = {};
     puppeteer.launch().then(async browser => {
         const page = await browser.newPage();
+
+        if(url.indexOf('linkedin.com')!== -1){
+            await page.goto('https://linkedin.com');
+            await page.focus('input.login-email');
+            await page.type('#login-email',config.linkedin.email);
+            await page.focus('input.login-password');
+            await page.type('#login-password',config.linkedin.password);
+            page.click('.submit-button');
+            await page.waitForNavigation();
+        }
+        
         const response = await page.goto(url);
         data.title = await page.title();
         data.url = await page.url();
