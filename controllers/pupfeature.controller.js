@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer'),
     config = require('../config'),
+    fetch = require('isomorphic-fetch'),
     cloudinary = require('cloudinary'),
     fs = require('fs'),
     {
@@ -9,6 +10,7 @@ const puppeteer = require('puppeteer'),
         URL
     } = require('url');
 cloudinary.config(config.cloudinary);
+
 
 exports.getScreenshot = function (req, res) {
     const url = req.body.url;
@@ -182,6 +184,47 @@ exports.extractPage = function (req, res) {
         });
     });
 };
+
+exports.embed = function (req, res) {
+    let url = req.query.url;
+    let html;
+    if(!url) {
+        return res.status(400).end(); 
+    }
+    if(url.includes('twitter')){
+        fetch('https://publish.twitter.com/oembed?url='+url, {
+		headers: {
+			'User-Agent': 'pup',
+			accept: 'application/json',
+			'Content-Type': 'application/json',
+		},
+		method: 'get',
+	})
+		.then(res => res.json())
+		.then(data => {
+            html = data.html;
+		});
+    } else if (url.includes('youtube') || url.includes("youtu.be")) {
+        let extractedID;
+        if(url.includes('youtube')) {
+            extractedID = new URL(url).searchParams.get('v');
+        } else {
+            extractedID = url.substring(url.lastIndexOf('/')).split('/')[1];
+        }
+        html = `<iframe id="ytplayer" type="text/html" width="640" height="360" src="https://www.youtube.com/embed/${extractedID}" frameborder="0"></iframe>`;
+    } else if (url.includes('gist')) {
+        html = `<script src=${url}.js></script>`;
+    } else if (url.includes('giphy')) {
+        const href = url;
+        let extractedID;
+        extractedID = url.substring(url.lastIndexOf('-')).split('-')[1];
+        html = `<iframe src="https://giphy.com/embed/${extractedID}" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="${href}">via GIPHY</a></p>`;
+    }
+    else {
+        html = 'syed will give iFrame';
+    }
+    res.json({ html: html});
+}
 
 
 function getContent() {

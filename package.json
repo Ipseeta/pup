@@ -13,6 +13,7 @@
     "express": "~4.16.0",
     "fs": "^0.0.1-security",
     "http-errors": "~1.6.2",
+    "isomorphic-fetch": "^2.2.1",
     "jade": "~1.11.0",
     "mime": "^2.4.0",
     "mongoose": "^5.4.2",

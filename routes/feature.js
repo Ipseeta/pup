@@ -9,5 +9,6 @@ router.route('/wsendpoint').get(FeatureController.getWSEndpoint);
 router.route('/stats').post(FeatureController.getStats);
 router.route('/screencast').get(FeatureController.getScreencast);//TODO
 router.route('/extract').post(FeatureController.extractPage);
+router.route('/embed').get(FeatureController.embed);
 
 module.exports = router;
