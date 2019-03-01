@@ -3,17 +3,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const config = require('./config');
-const mongoose = require('mongoose');
-const passport = require('passport');
-const port = process.env.PORT || 3000;
-const baseUrl = process.env.BASE_URL || 'http://localhost:'
-
-const indexRouter = require('./routes/index');
 const featureRouter = require('./routes/feature');
-const auth = require('./routes/auth')(passport);
-console.log(`Server started on ${baseUrl}${port}`);
-
 const app = express();
 
 // view engine setup
@@ -25,11 +15,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(passport.initialize());
-app.use(passport.session()); // persistent login sessions
 
-app.use('/', auth);
-app.use('/', indexRouter);
 app.use('/', featureRouter);
 
 // catch 404 and forward to error handler
@@ -47,6 +33,5 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
-//mongoose.connect(config.mongoConnectionString);
 
 module.exports = app;

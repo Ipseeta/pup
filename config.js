@@ -1,5 +1,5 @@
 const config = {
-    mongoConnectionString: process.env.MONGO_URL || 'mongodb://localhost:27017/pup',
+    //mongoConnectionString: process.env.MONGO_URL || 'mongodb://localhost:27017/pup',
     uploadDir: process.env.UPLOAD_DIR || '/Users/ipseeta/tmp',
     cloudinary: {
         cloud_name: 'pup',
