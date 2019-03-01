@@ -35,7 +35,6 @@ exports.getScreenshot = function (req, res) {
         });
         await browser.close();
         if (options && options.encoding) {
-            console.log("With encoding");
             fs.writeFile(`${config.uploadDir}/${fileName}`, screenshot, 'base64', function (err) {
                 if (!err) {
                     cloudinary.v2.uploader.upload(`${config.uploadDir}/${fileName}`, function (err, result) {
@@ -221,7 +220,8 @@ exports.embed = function (req, res) {
         html = `<iframe src="https://giphy.com/embed/${extractedID}" width="480" height="480" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="${href}">via GIPHY</a></p>`;
     }
     else {
-        html = 'syed will give iFrame';
+        html = 'Not Found';
+        res.status(404);
     }
     res.json({ html: html});
 }
