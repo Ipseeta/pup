@@ -167,7 +167,7 @@ exports.extractPage = function (req, res) {
     let data = {};
     puppeteer.launch({
         headless: true,
-        executablePath: '~/pup/node_modules/puppeteer/.local-chromium/linux-609904/chrome-linux/chrome',
+        executablePath: '/root/pup/node_modules/puppeteer/.local-chromium/linux-609904/chrome-linux/chrome',
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }).then(async browser => {
         const page = await browser.newPage();
