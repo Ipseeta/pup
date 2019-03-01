@@ -165,7 +165,7 @@ exports.extractPage = function (req, res) {
     }
 
     let data = {};
-    puppeteer.launch().then(async browser => {
+    puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']}).then(async browser => {
         const page = await browser.newPage();
         const response = await page.goto(url);
         data.title = await page.title();
